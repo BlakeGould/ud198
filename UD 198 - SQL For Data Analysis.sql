@@ -504,7 +504,10 @@ HAVING SUM(o.total_amt_usd) < 1000
 ORDER BY usd_total
 
 -- Which account has spent the most with us?
-SELECT a.id, a.name, SUM(o.total_amt_usd) total_spent
+SELECT
+    a.id
+    ,a.name
+    ,SUM(o.total_amt_usd) total_spent
 FROM accounts a
 JOIN orders o
 ON a.id = o.account_id
@@ -513,7 +516,10 @@ ORDER BY total_spent DESC
 LIMIT 1
 
 -- Which account has spent the least with us?
-SELECT a.id, a.name, SUM(o.total_amt_usd) total_spent
+SELECT 
+    a.id
+    ,a.name
+    ,SUM(o.total_amt_usd) total_spent
 FROM accounts a
 JOIN orders o
 ON a.id = o.account_id
@@ -523,8 +529,8 @@ LIMIT 1;
 
 -- Which accounts used facebook as a channel to contact customers more than 6 times?
 SELECT
-a.id
-,COUNT(*) facebook_events
+    a.id
+    ,COUNT(*) facebook_events
 FROM web_events w
 JOIN accounts a on w.account_id = a.id
 WHERE w.channel = 'facebook'
@@ -572,3 +578,76 @@ JOIN accounts a on w.account_id = a.id
 GROUP BY a.id, w.channel
 ORDER BY channel_usage DESC
 LIMIT 10
+
+/*
+L3.27 Questions
+*/
+-- 1) Find the sales in terms of total dollars for all orders in each year, ordered from greatest to least. Do you notice any trends in the yearly sales totals?
+    SELECT
+	DATE_TRUNC('year',occurred_at)
+    ,SUM(total_amt_usd)
+    FROM ORDERS
+    GROUP BY 1
+    ORDER BY 2 DESC
+
+    --their solution (still gives same output)
+    SELECT DATE_PART('year', occurred_at) ord_year,  SUM(total_amt_usd) total_spent
+    FROM orders
+    GROUP BY 1
+    ORDER BY 2 DESC;
+
+-- 2) Which month did Parch & Posey have the greatest sales in terms of total dollars? Are all months evenly represented by the dataset?
+    SELECT
+	DATE_TRUNC('month',occurred_at)
+    ,SUM(total_amt_usd)
+    FROM ORDERS
+    GROUP BY 1
+    ORDER BY 2 DESC
+
+    --their solution
+    SELECT DATE_PART('month', occurred_at) ord_month, SUM(total_amt_usd) total_spent
+    FROM orders
+    WHERE occurred_at BETWEEN '2014-01-01' AND '2017-01-01'
+    GROUP BY 1
+    ORDER BY 2 DESC; 
+
+    /*
+    Ah, okay, I see what they're doing now. They just mean month by name (December), not which actual month in the history of time (the December in 2016). 
+
+    Yah, look at that--later they switch to "In which month of which year..."
+    */
+
+-- 3) Which year did Parch & Posey have the greatest sales in terms of total number of orders? Are all years evenly represented by the dataset?
+    SELECT
+    DATE_PART('year',occurred_at)
+    ,SUM(total_amt_usd)
+    FROM ORDERS
+    GROUP BY 1
+    ORDER BY 2 DESC
+
+-- 4) Which month did Parch & Posey have the greatest sales in terms of total number of orders? Are all months evenly represented by the dataset?
+    SELECT
+    DATE_PART('month',occurred_at)
+    ,COUNT(ID)
+    FROM ORDERS
+    GROUP BY 1
+    ORDER BY 2 DESC
+
+    --their answer
+        SELECT DATE_PART('month', occurred_at) ord_month, COUNT(*) total_sales
+        FROM orders
+        WHERE occurred_at BETWEEN '2014-01-01' AND '2017-01-01'
+        GROUP BY 1
+        ORDER BY 2 DESC; 
+
+-- 5) In which month of which year did Walmart spend the most on gloss paper in terms of dollars?
+
+    SELECT
+	DATE_TRUNC('month', o.occurred_at) ord_month
+    ,SUM(o.gloss_amt_usd) gloss_sales
+    FROM orders o
+    JOIN accounts a on o.account_id = a.id
+    WHERE a.name = 'Walmart'
+    GROUP BY 1
+    ORDER BY 2 DESC
+    LIMIT 1;
