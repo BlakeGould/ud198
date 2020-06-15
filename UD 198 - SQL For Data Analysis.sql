@@ -750,3 +750,25 @@ L3.31 Questions
     JOIN orders o on a.id = o.account_id
     GROUP BY s.name
     ORDER BY 3 DESC
+
+    /*
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+L4.3 Questions
+*/
+-- Using a subquery, find the average number of events for each day for each channel. 
+    SELECT
+        channel
+        ,AVG(count)
+    FROM 
+        (
+        SELECT 
+            DATE_TRUNC('day',occurred_at) AS day
+            ,channel
+            ,COUNT(*)
+        FROM web_events
+        GROUP BY 1,2
+        ) sub
+    GROUP BY channel
+
