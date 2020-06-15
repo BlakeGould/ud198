@@ -772,3 +772,69 @@ L4.3 Questions
         ) sub
     GROUP BY channel
 
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+L4.7 Questions
+*/
+SELECT
+	AVG(standard_qty) as  avg_std
+    ,AVG(gloss_qty) as avg_gloss
+	,AVG(poster_qty) as avg_poster
+    ,SUM(total_amt_usd) as sum_total_amt_usd
+FROM ORDERS
+WHERE DATE_TRUNC('month',occurred_at) =
+	(SELECT DATE_TRUNC('month',MIN(occurred_at))
+	FROM orders)
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+L4.9 Questions
+*/
+
+-- Provide the name of the sales_rep in each region with the largest amount of total_amt_usd sales.
+SELECT 
+    sub3.sales_rep_name
+    ,sub3.region_name
+    ,sub3.total_sales
+FROM
+    (SELECT 
+        region_name
+        ,MAX(total_sales) total_amt
+    FROM (
+        SELECT 
+            s.name sales_rep_name
+            ,r.name region_name
+            ,SUM(o.total_amt_usd) as total_sales
+        FROM sales_reps s
+        JOIN region r on s.region_id = r.id
+        JOIN accounts a on s.id = a.sales_rep_id
+        JOIN orders o on a.id = o.account_id
+        GROUP BY 1,2
+        ) sub1
+    GROUP BY 1) sub2
+JOIN
+    (        SELECT 
+            s.name sales_rep_name
+            ,r.name region_name
+            ,SUM(o.total_amt_usd) as total_sales
+        FROM sales_reps s
+        JOIN region r on s.region_id = r.id
+        JOIN accounts a on s.id = a.sales_rep_id
+        JOIN orders o on a.id = o.account_id
+        GROUP BY 1,2) sub3
+    ON sub2.region_name = sub3.region_name AND sub2.total_amt = sub3.total_sales
+
+-- For the region with the largest (sum) of sales total_amt_usd, how many total (count) orders were placed?
+
+-- How many accounts had more total purchases than the account name which has bought the most standard_qty paper throughout their lifetime as a customer?
+
+-- For the customer that spent the most (in total over their lifetime as a customer) total_amt_usd, how many web_events did they have for each channel?
+
+-- What is the lifetime average amount spent in terms of total_amt_usd for the top 10 total spending accounts?
+
+-- What is the lifetime average amount spent in terms of total_amt_usd, including only the companies that spent more per order, on average, than the average of all orders.
