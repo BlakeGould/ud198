@@ -905,3 +905,51 @@ JOIN
         GROUP BY 1
         HAVING AVG(o.total_amt_usd) > (SELECT AVG(o.total_amt_usd) avg_all
                                     FROM orders o)) temp_table;
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+L4.13 Questions - USE SUBQUERIES
+*/
+-- 1 - Provide the name of the sales_rep in each region with the largest amount of total_amt_usd sales.
+WITH sub2 as(
+    SELECT 
+            s.name sales_rep_name
+            ,r.name region_name
+            ,SUM(o.total_amt_usd) as total_sales
+        FROM sales_reps s
+        JOIN region r on s.region_id = r.id
+        JOIN accounts a on s.id = a.sales_rep_id
+        JOIN orders o on a.id = o.account_id
+        GROUP BY 1,2
+),
+
+sub3 as (
+    SELECT 
+        region_name as region_name
+        ,MAX(total_sales) as total_sales
+    FROM sub2
+    GROUP BY 1
+)
+
+SELECT 
+    sub2.sales_rep_name
+    ,sub2.region_name
+    ,sub2.total_sales
+FROM sub2
+JOIN sub3 ON sub2.region_name = sub3.region_name AND sub2.total_sales = sub3.total_sales
+
+-- For the region with the largest sales total_amt_usd, how many total orders were placed?
+
+
+-- How many accounts had more total purchases than the account name which has bought the most standard_qty paper throughout their lifetime as a customer?
+
+
+-- For the customer that spent the most (in total over their lifetime as a customer) total_amt_usd, how many web_events did they have for each channel?
+
+
+-- What is the lifetime average amount spent in terms of total_amt_usd for the top 10 total spending accounts?
+
+
+-- What is the lifetime average amount spent in terms of total_amt_usd, including only the companies that spent more per order, on average, than the average of all orders.
